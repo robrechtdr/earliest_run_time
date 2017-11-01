@@ -33,6 +33,12 @@ class TestCase(unittest.TestCase):
         cr_time = CronLineTime("* 19 /bin/run_me_sixty_times")
         assert get_earliest_run_time(cr_time, cur_time) == ("19", "00", 0)
 
+        # Additional checks ######
+        # This case covers 23 hours incr to 0 with day incr
+        cur_time = CurrentTime("23:10")
+        cr_time = CronLineTime("05 * /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("0", "05", 1)
+
 
     def test_get_earliest_run_time_prettified(self):
         cur_time = CurrentTime("16:10")

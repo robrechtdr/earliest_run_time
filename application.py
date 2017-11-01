@@ -3,7 +3,8 @@ cnf = """30 1 /bin/run_me_daily
 * * /bin/run_me_every_minute
 * 19 /bin/run_me_sixty_times"""
 
-current_time = "16:10"
+#current_time = "16:10"
+current_time = "23:10"
 
 
 
@@ -65,7 +66,7 @@ def get_earliest_run_time(cr_time, cur_time):
         if hour == "23":
             # As example output "1:30" seems to use a single digit for the hour.
             new_hour = "0"
-            rel_day = 1
+            day_incr = 1
         else:
             new_hour = str(int(hour) + 1)
             day_incr = 0
@@ -84,6 +85,9 @@ def get_earliest_run_time(cr_time, cur_time):
         return new_minute, hour_incr
     '''
 
+    # 3-level deep nested conditions; there is probably a more
+    # elegant and/or modular way to calculate this.
+    # Using examples per condition to make it more digestible.
     if cr_time.hour == "*":
         # E.g. cur_time; 23:10
         #       cr_time;  *:*
@@ -103,7 +107,7 @@ def get_earliest_run_time(cr_time, cur_time):
             #       cr_time;  *:05
             # =>             23:05, today
             if cr_time.minute < cur_time.minute:
-                earl_hour, earl_day_ = incr_hour(cur_time.minute)
+                earl_hour, earl_day_ = incr_hour(cur_time.hour)
                 earl_minute = cr_time.minute
                 # Could also have put the 'return' at the end but preferring
                 # using returns immediately as it saves devs from having
@@ -190,6 +194,7 @@ def get_earliest_run_time_prettified(cr_time, cur_time):
     """
     Get the prettified form of get_earliest_run_time.
     """
+    #import pdb; pdb.set_trace()
     earl_h, earl_m, earl_day_ = get_earliest_run_time(cr_time, cur_time)
 
     earl_day = None
@@ -222,13 +227,12 @@ def main(current_time, cnf):
     # get first line of cron
     #cronl = cnf.split("\n")[0]
     #cr_line = "30 1 /bin/run_me_daily"
-    #cr_line = "45 * /bin/run_me_hourly"
+    cr_line = "05 * /bin/run_me_x"
     cr_time = CronLineTime(cr_line)
     cur_time = CurrentTime(current_time)
 
     earliest_run = get_earliest_run_time_prettified(cr_time, cur_time)
     #earliest_run = get_earliest_run(cr_time, cur_time)
-    import pdb; pdb.set_trace()
     line_outp = earliest_run
 
 
