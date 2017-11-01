@@ -85,8 +85,8 @@ def get_earliest_run_time(cr_time, cur_time):
         if cr_time.minute == "*":
             earl_hour = cur_time.hour
             earl_minute = cur_time.minute
-            earl_day_ = 0
-            return earl_hour, earl_minute, earl_day_
+            earl_day = 0
+            return earl_hour, earl_minute, earl_day
         else:
             # If cron minute alr in past
             # E.g. cur_time; 23:10
@@ -97,13 +97,13 @@ def get_earliest_run_time(cr_time, cur_time):
             #       cr_time;  *:05
             # =>             23:05, today
             if cr_time.minute < cur_time.minute:
-                earl_hour, earl_day_ = incr_hour(cur_time.hour)
+                earl_hour, earl_day = incr_hour(cur_time.hour)
                 earl_minute = cr_time.minute
                 # Could also have put the 'return' at the end but preferring
                 # using returns immediately as it saves devs from having
                 # to look at the condition and then further down as we
                 # know returns exit the function.
-                return earl_hour, earl_minute, earl_day_
+                return earl_hour, earl_minute, earl_day
 
 
             # Same as *:* , cr
@@ -114,8 +114,8 @@ def get_earliest_run_time(cr_time, cur_time):
             else:
                 earl_hour = cur_time.hour
                 earl_minute = cr_time.minute
-                earl_day_ = 0
-                return earl_hour, earl_minute, earl_day_
+                earl_day = 0
+                return earl_hour, earl_minute, earl_day
 
     else:
         if cr_time.minute == "*":
@@ -127,8 +127,8 @@ def get_earliest_run_time(cr_time, cur_time):
             if cr_time.hour < cur_time.hour:
                 earl_hour = cr_time.hour
                 earl_minute = "00"
-                earl_day_ = 1
-                return earl_hour, earl_minute, earl_day_
+                earl_day = 1
+                return earl_hour, earl_minute, earl_day
 
             else:
                 # E.g. cur_time; 23:11
@@ -136,8 +136,8 @@ def get_earliest_run_time(cr_time, cur_time):
                 # =>             24:00, today
                 earl_hour = cr_time.hour
                 earl_minute = "00"
-                earl_day_ = 0
-                return earl_hour, earl_minute, earl_day_
+                earl_day = 0
+                return earl_hour, earl_minute, earl_day
 
         # If not * as minute nor as hour
         else:
@@ -148,8 +148,8 @@ def get_earliest_run_time(cr_time, cur_time):
                 if cr_time.hour < cur_time.hour:
                     earl_hour = cr_time.hour
                     earl_minute = cr_time.minute
-                    earl_day_ = 1
-                    return earl_hour, earl_minute, earl_day_
+                    earl_day = 1
+                    return earl_hour, earl_minute, earl_day
 
                 # E.g. cur_time; 22:11
                 #       cr_time; 23:10
@@ -157,8 +157,8 @@ def get_earliest_run_time(cr_time, cur_time):
                 else:
                     earl_hour = cr_time.hour
                     earl_minute = cr_time.minute
-                    earl_day_ = 0
-                    return earl_hour, earl_minute, earl_day_
+                    earl_day = 0
+                    return earl_hour, earl_minute, earl_day
 
             else:
                 # E.g. cur_time; 23:11
@@ -167,8 +167,8 @@ def get_earliest_run_time(cr_time, cur_time):
                 if cr_time.hour < cur_time.hour:
                     earl_hour = cr_time.hour
                     earl_minute = cr_time.minute
-                    earl_day_ = 1
-                    return earl_hour, earl_minute, earl_day_
+                    earl_day = 1
+                    return earl_hour, earl_minute, earl_day
 
                 # E.g. cur_time; 22:11
                 #       cr_time; 23:12
@@ -176,8 +176,8 @@ def get_earliest_run_time(cr_time, cur_time):
                 else:
                     earl_hour = cr_time.hour
                     earl_minute = cr_time.minute
-                    earl_day_ = 0
-                    return earl_hour, earl_minute, earl_day_
+                    earl_day = 0
+                    return earl_hour, earl_minute, earl_day
 
 
 def get_earliest_run_time_prettified(cr_time, cur_time):

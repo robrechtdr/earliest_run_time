@@ -53,5 +53,6 @@ class TestCase(unittest.TestCase):
         assert get_earliest_run_time_prettified(cr_time, cur_time) == (
             "19:00 today - /bin/run_me_sixty_times")
 
+
 if __name__ == "__main__":
     unittest.main()
