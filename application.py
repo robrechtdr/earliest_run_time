@@ -1,15 +1,4 @@
-cnf = """30 1 /bin/run_me_daily
-45 * /bin/run_me_hourly
-* * /bin/run_me_every_minute
-* 19 /bin/run_me_sixty_times"""
-
-#current_time = "16:10"
-current_time = "23:10"
-
-
-
-
-
+import sys
 
 
 class CurrentTime(object):
@@ -27,6 +16,7 @@ class CronLineTime(object):
         self.minute = cr_line_spl[0]
 
 
+# Assuming that we can't use an already implemented cron lib : )
 def get_earliest_run_time(cr_time, cur_time):
     """
     Output the soonest time at which each of the commands will fire
@@ -194,7 +184,6 @@ def get_earliest_run_time_prettified(cr_time, cur_time):
     """
     Get the prettified form of get_earliest_run_time.
     """
-    #import pdb; pdb.set_trace()
     earl_h, earl_m, earl_day_ = get_earliest_run_time(cr_time, cur_time)
 
     earl_day = None
@@ -210,33 +199,13 @@ def get_earliest_run_time_prettified(cr_time, cur_time):
     return earl_time_str
 
 
-# Assuming that we can't use an already implemented cron lib : )
-def main(current_time, cnf):
-    """
-    """
-
-    '''
-    #def resolve_abstractions# get_explicit_earliest_cr_time(self, cur_time):
-    def get_earliest_run(self, cr_time, cur_time):
-    def get_explicit_earliest_cr_time(cr_time, cur_time):
-    # Prob best to calc earliest run time first and then say if tomorrow or not
-    def _get_earliest_run(self, cr_time, cur_time):
-    '''
-
-
-    # get first line of cron
-    #cronl = cnf.split("\n")[0]
-    #cr_line = "30 1 /bin/run_me_daily"
-    cr_line = "05 * /bin/run_me_x"
-    cr_time = CronLineTime(cr_line)
+if __name__ == "__main__":
+    current_time = sys.argv[1]
     cur_time = CurrentTime(current_time)
 
-    earliest_run = get_earliest_run_time_prettified(cr_time, cur_time)
-    #earliest_run = get_earliest_run(cr_time, cur_time)
-    line_outp = earliest_run
-
-
-if __name__ == "__main__":
-    main(current_time, cnf)
-
-
+    # Using this instead of readlines to get rid of \n
+    cronlines = [line.rstrip('\n') for line in sys.stdin]
+    for cronline in cronlines:
+        cr_time = CronLineTime(cronline)
+        earliest_run_time = get_earliest_run_time_prettified(cr_time, cur_time)
+        print earliest_run_time

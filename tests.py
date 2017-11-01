@@ -13,6 +13,8 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
+    # Amount of test cases are proportional to the complexity (~likeliness
+    # to cause problems) of the functions.
     def test_get_earliest_run_time(self):
         # Could define in setUp as well, negligeable benefit from doing so.
         cur_time = CurrentTime("16:10")
