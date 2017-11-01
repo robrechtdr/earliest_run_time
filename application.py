@@ -7,6 +7,9 @@ class CurrentTime(object):
         self.hour = cur_time_spl[0]
         self.minute = cur_time_spl[1]
 
+    def __repr__(self):
+        return "CurrentTime('{0}:{1}')".format(self.hour, self.minute)
+
 
 class CronLineTime(object):
     def __init__(self, cr_line):
@@ -15,8 +18,11 @@ class CronLineTime(object):
         self.hour = cr_line_spl[1]
         self.minute = cr_line_spl[0]
 
+    def __repr__(self):
+        return "CronLineTime('{0} {1} {2}')".format(self.minute, self.hour, self.path)
 
-# Assuming that we can't use an already implemented cron lib : )
+
+# Assuming that we can't use a cron parsing lib.
 def get_earliest_run_time(cr_time, cur_time):
     """
     Output the soonest time at which each of the commands will fire
@@ -61,19 +67,6 @@ def get_earliest_run_time(cr_time, cur_time):
             new_hour = str(int(hour) + 1)
             day_incr = 0
         return new_hour, day_incr
-
-    # Not necessary as we don't count seconds and don't incr when same
-    # minute and same hour.
-    '''
-    def incr_minute(minute):
-        if minute == "59":
-            new_minute = "00"
-            hour_incr = 1
-        else:
-            new_minute = str(int(minute) + 1)
-            hour_incr = 0
-        return new_minute, hour_incr
-    '''
 
     # 3-level deep nested conditions; there is probably a more
     # elegant and/or modular way to calculate this.
