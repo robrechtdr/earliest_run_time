@@ -135,10 +135,16 @@ def get_earliest_run_time(cr_time, cur_time):
         # If not * as minute nor as hour
         else:
             if cr_time.minute < cur_time.minute:
+                # cr_time.hour < cur_time.hour
                 # E.g. cur_time; 23:11
                 #       cr_time; 22:10
                 # =>             22:10, tomorrow
-                if cr_time.hour < cur_time.hour:
+                #
+                # cr_time.hour == cur_time.hour
+                # E.g. cur_time; 23:11
+                #       cr_time; 23:10
+                # =>             23:10, tomorrow
+                if cr_time.hour <= cur_time.hour:
                     earl_hour = cr_time.hour
                     earl_minute = cr_time.minute
                     earl_day = 1
