@@ -72,6 +72,7 @@ def get_earliest_run_time(cr_time, cur_time):
     # elegant and/or modular way to calculate this.
     # Using examples per condition to make it more digestible.
     if cr_time.hour == "*":
+        # Case A
         # E.g. cur_time; 23:10
         #       cr_time;  *:*
         # =>             23:10, today
@@ -81,6 +82,7 @@ def get_earliest_run_time(cr_time, cur_time):
             earl_day = 0
             return earl_hour, earl_minute, earl_day
         else:
+            # Case B
             # If cron minute alr in past
             # E.g. cur_time; 23:10
             #       cr_time;  *:05
@@ -99,8 +101,12 @@ def get_earliest_run_time(cr_time, cur_time):
                 return earl_hour, earl_minute, earl_day
 
 
-            # Same as *:* , cr
+            # Case C1
+            # E.g. cur_time; 23:10
+            #       cr_time;  *:11
+            # =>             23:11, today
             #
+            # Case C2
             # E.g. cur_time; 23:11
             #       cr_time;  *:11
             # =>             23:11, today
@@ -112,8 +118,7 @@ def get_earliest_run_time(cr_time, cur_time):
 
     else:
         if cr_time.minute == "*":
-            # Not same as *:* as takes minute from cur
-            #
+            # Case D
             # E.g. cur_time; 23:11
             #       cr_time; 22:*
             # =>             22:00, tomorrow
@@ -123,33 +128,49 @@ def get_earliest_run_time(cr_time, cur_time):
                 earl_day = 1
                 return earl_hour, earl_minute, earl_day
 
-            else:
-                # E.g. cur_time; 23:11
-                #       cr_time; 24:*
-                # =>             24:00, today
+            # Case E
+            # E.g. cur_time; 23:11
+            #       cr_time; 24:*
+            # =>             24:00, today
+            elif cr_time.hour > cur_time.hour:
                 earl_hour = cr_time.hour
                 earl_minute = "00"
                 earl_day = 0
                 return earl_hour, earl_minute, earl_day
 
+            # Case F
+            # E.g. cur_time; 23:11
+            #       cr_time; 24:*
+            # =>             24:00, today
+            else:
+                earl_hour = cr_time.hour
+                earl_minute = cur_time.minute
+                earl_day = 0
+                return earl_hour, earl_minute, earl_day
+
+
         # If not * as minute nor as hour
         else:
             if cr_time.minute < cur_time.minute:
+                # Case G1
+                # cr_time.hour == cur_time.hour
+                # E.g. cur_time; 23:11
+                #       cr_time; 22:11
+                # =>             22:11, tomorrow
+                #
+                # Case G2
                 # cr_time.hour < cur_time.hour
                 # E.g. cur_time; 23:11
                 #       cr_time; 22:10
                 # =>             22:10, tomorrow
                 #
-                # cr_time.hour == cur_time.hour
-                # E.g. cur_time; 23:11
-                #       cr_time; 23:10
-                # =>             23:10, tomorrow
                 if cr_time.hour <= cur_time.hour:
                     earl_hour = cr_time.hour
                     earl_minute = cr_time.minute
                     earl_day = 1
                     return earl_hour, earl_minute, earl_day
 
+                # Case H
                 # E.g. cur_time; 22:11
                 #       cr_time; 23:10
                 # =>             23:10, today
@@ -160,6 +181,7 @@ def get_earliest_run_time(cr_time, cur_time):
                     return earl_hour, earl_minute, earl_day
 
             else:
+                # Case I
                 # E.g. cur_time; 23:11
                 #       cr_time; 22:12
                 # =>             22:12, tomorrow
@@ -169,6 +191,7 @@ def get_earliest_run_time(cr_time, cur_time):
                     earl_day = 1
                     return earl_hour, earl_minute, earl_day
 
+                # Case J
                 # E.g. cur_time; 22:11
                 #       cr_time; 23:12
                 # =>             23:12, today

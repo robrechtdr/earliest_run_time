@@ -26,19 +26,70 @@ class TestCase(unittest.TestCase):
         # each assert vs a test per function approach.
         # While quicker to write and simpler in structure this now only shows
         # the first assert that fails if multiple fail within the same test.
+        #
+        # Case C1
         cr_time = CronLineTime("45 * /bin/run_me_hourly")
         assert get_earliest_run_time(cr_time, cur_time) == ("16", "45", 0)
 
+        # Case A
         cr_time = CronLineTime("* * /bin/run_me_every_minute")
         assert get_earliest_run_time(cr_time, cur_time) == ("16", "10", 0)
 
+        # Case E
         cr_time = CronLineTime("* 19 /bin/run_me_sixty_times")
         assert get_earliest_run_time(cr_time, cur_time) == ("19", "00", 0)
 
+
         # Additional checks ######
+        # Case B
+        cur_time = CurrentTime("17:50")
+        cr_time = CronLineTime("45 * /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("18", "45", 0)
+
+        # Case C2
+        cur_time = CurrentTime("17:45")
+        cr_time = CronLineTime("45 * /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("17", "45", 0)
+
+        # Case D
+        cur_time = CurrentTime("20:29")
+        cr_time = CronLineTime("* 19 /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("19", "00", 1)
+
+        # case F
+        cur_time = CurrentTime("19:29")
+        cr_time = CronLineTime("* 19 /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("19", "29", 0)
+
+        # Case G1
+        cur_time = CurrentTime("1:31")
+        cr_time = CronLineTime("30 0 /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("0", "30", 1)
+
+        # Case G2
         cur_time = CurrentTime("1:31")
         cr_time = CronLineTime("30 1 /bin/run_me_x")
         assert get_earliest_run_time(cr_time, cur_time) == ("1", "30", 1)
+
+        # Case H
+        cur_time = CurrentTime("0:30")
+        cr_time = CronLineTime("30 1 /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("1", "30", 0)
+
+        # Case I1
+        cur_time = CurrentTime("2:29")
+        cr_time = CronLineTime("30 1 /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("1", "30", 1)
+
+        # Case I2
+        cur_time = CurrentTime("2:30")
+        cr_time = CronLineTime("30 1 /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("1", "30", 1)
+
+        # Case J
+        cur_time = CurrentTime("1:30")
+        cr_time = CronLineTime("31 1 /bin/run_me_x")
+        assert get_earliest_run_time(cr_time, cur_time) == ("1", "31", 0)
 
         # This case covers 23 hours incr to 0 with day incr
         cur_time = CurrentTime("23:10")
