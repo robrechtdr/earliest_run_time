@@ -68,138 +68,161 @@ def get_earliest_run_time(cr_time, cur_time):
             day_incr = 0
         return new_hour, day_incr
 
-    # 3-level deep nested conditions; there is probably a more
-    # elegant and/or modular way to calculate this.
-    # Using examples per condition to make it more digestible.
-    if cr_time.hour == "*":
-        # Case A
-        # E.g. cur_time; 23:10
-        #       cr_time;  *:*
-        # =>             23:10, today
-        if cr_time.minute == "*":
-            earl_hour = cur_time.hour
-            earl_minute = cur_time.minute
+    # Case A
+    # E.g. cur_time; 23:10
+    #       cr_time;  *:*
+    # =>             23:10, today
+    if cr_time.hour == "*" and cr_time.minute == "*":
+        earl_hour = cur_time.hour
+        earl_minute = cur_time.minute
+        earl_day = 0
+        return earl_hour, earl_minute, earl_day
+
+    # Case B
+    # If cron minute alr in past
+    # E.g. cur_time; 23:10
+    #       cr_time;  *:05
+    # =>             00:05, tomor
+    #
+    # E.g. cur_time; 22:10
+    #       cr_time;  *:05
+    # =>             23:05, today
+    elif cr_time.hour == "*" and cr_time.minute < cur_time.minute:
+        earl_hour, earl_day = incr_hour(cur_time.hour)
+        earl_minute = cr_time.minute
+        # Could also have put the 'return' at the end but preferring
+        # using returns immediately as it saves devs from having
+        # to look at the condition and then further down as we
+        # know returns exit the function.
+        return earl_hour, earl_minute, earl_day
+
+    # Case C1
+    # E.g. cur_time; 23:10
+    #       cr_time;  *:11
+    # =>             23:11, today
+    #
+    # Case C2
+    # E.g. cur_time; 23:11
+    #       cr_time;  *:11
+    # =>             23:11, today
+    elif cr_time.hour == "*" and cr_time.minute >= cur_time.minute:
+        earl_hour = cur_time.hour
+        earl_minute = cr_time.minute
+        earl_day = 0
+        return earl_hour, earl_minute, earl_day
+
+    # Case D
+    # E.g. cur_time; 23:11
+    #       cr_time; 22:*
+    # =>             22:00, tomorrow
+    elif cr_time.minute == "*" and cr_time.hour < cur_time.hour:
+        earl_hour = cr_time.hour
+        earl_minute = "00"
+        earl_day = 1
+        return earl_hour, earl_minute, earl_day
+
+    # Case E
+    # E.g. cur_time; 23:11
+    #       cr_time; 24:*
+    # =>             24:00, today
+    elif cr_time.minute == "*" and cr_time.hour > cur_time.hour:
+            earl_hour = cr_time.hour
+            earl_minute = "00"
             earl_day = 0
             return earl_hour, earl_minute, earl_day
-        else:
-            # Case B
-            # If cron minute alr in past
-            # E.g. cur_time; 23:10
-            #       cr_time;  *:05
-            # =>             00:05, tomor
-            #
-            # E.g. cur_time; 22:10
-            #       cr_time;  *:05
-            # =>             23:05, today
-            if cr_time.minute < cur_time.minute:
-                earl_hour, earl_day = incr_hour(cur_time.hour)
-                earl_minute = cr_time.minute
-                # Could also have put the 'return' at the end but preferring
-                # using returns immediately as it saves devs from having
-                # to look at the condition and then further down as we
-                # know returns exit the function.
-                return earl_hour, earl_minute, earl_day
 
+    # Case F
+    # E.g. cur_time; 23:11
+    #       cr_time; 24:*
+    # =>             24:00, today
+    elif cr_time.minute == "*" and cr_time.hour == cur_time.hour:
+        earl_hour = cr_time.hour
+        earl_minute = cur_time.minute
+        earl_day = 0
+        return earl_hour, earl_minute, earl_day
 
-            # Case C1
-            # E.g. cur_time; 23:10
-            #       cr_time;  *:11
-            # =>             23:11, today
-            #
-            # Case C2
-            # E.g. cur_time; 23:11
-            #       cr_time;  *:11
-            # =>             23:11, today
-            else:
-                earl_hour = cur_time.hour
-                earl_minute = cr_time.minute
-                earl_day = 0
-                return earl_hour, earl_minute, earl_day
+    # Case D
+    # E.g. cur_time; 23:11
+    #       cr_time; 22:*
+    # =>             22:00, tomorrow
+    elif cr_time.minute == "*" and cr_time.hour < cur_time.hour:
+        earl_hour = cr_time.hour
+        earl_minute = "00"
+        earl_day = 1
+        return earl_hour, earl_minute, earl_day
+
+    # Case E
+    # E.g. cur_time; 23:11
+    #       cr_time; 24:*
+    # =>             24:00, today
+    elif cr_time.minute == "*" and cr_time.hour > cur_time.hour:
+        earl_hour = cr_time.hour
+        earl_minute = "00"
+        earl_day = 0
+        return earl_hour, earl_minute, earl_day
+
+    # Case F
+    # E.g. cur_time; 23:11
+    #       cr_time; 24:*
+    # =>             24:00, today
+    elif cr_time.minute == "*" and cr_time.hour == cur_time.hour:
+        earl_hour = cr_time.hour
+        earl_minute = cur_time.minute
+        earl_day = 0
+        return earl_hour, earl_minute, earl_day
+
+    # Case G1
+    # cr_time.hour == cur_time.hour
+    # E.g. cur_time; 23:11
+    #       cr_time; 22:11
+    # =>             22:11, tomorrow
+    #
+    # Case G2
+    # cr_time.hour < cur_time.hour
+    # E.g. cur_time; 23:11
+    #       cr_time; 22:10
+    # =>             22:10, tomorrow
+    #
+    elif cr_time.minute < cur_time.minute and cr_time.hour <= cur_time.hour:
+        earl_hour = cr_time.hour
+        earl_minute = cr_time.minute
+        earl_day = 1
+        return earl_hour, earl_minute, earl_day
+
+    # Case H
+    # E.g. cur_time; 22:11
+    #       cr_time; 23:10
+    # =>             23:10, today
+    elif cr_time.minute < cur_time.minute and cr_time.hour > cur_time.hour:
+        earl_hour = cr_time.hour
+        earl_minute = cr_time.minute
+        earl_day = 0
+        return earl_hour, earl_minute, earl_day
+
+    # Case I
+    # E.g. cur_time; 23:11
+    #       cr_time; 22:12
+    # =>             22:12, tomorrow
+    elif cr_time.minute >= cur_time.minute and cr_time.hour < cur_time.hour:
+        earl_hour = cr_time.hour
+        earl_minute = cr_time.minute
+        earl_day = 1
+        return earl_hour, earl_minute, earl_day
+
+    # Case J
+    # E.g. cur_time; 22:11
+    #       cr_time; 23:12
+    # =>             23:12, today
+    elif cr_time.minute >= cur_time.minute and cr_time.hour >= cur_time.hour:
+        earl_hour = cr_time.hour
+        earl_minute = cr_time.minute
+        earl_day = 0
+        return earl_hour, earl_minute, earl_day
 
     else:
-        if cr_time.minute == "*":
-            # Case D
-            # E.g. cur_time; 23:11
-            #       cr_time; 22:*
-            # =>             22:00, tomorrow
-            if cr_time.hour < cur_time.hour:
-                earl_hour = cr_time.hour
-                earl_minute = "00"
-                earl_day = 1
-                return earl_hour, earl_minute, earl_day
-
-            # Case E
-            # E.g. cur_time; 23:11
-            #       cr_time; 24:*
-            # =>             24:00, today
-            elif cr_time.hour > cur_time.hour:
-                earl_hour = cr_time.hour
-                earl_minute = "00"
-                earl_day = 0
-                return earl_hour, earl_minute, earl_day
-
-            # Case F
-            # E.g. cur_time; 23:11
-            #       cr_time; 24:*
-            # =>             24:00, today
-            else:
-                earl_hour = cr_time.hour
-                earl_minute = cur_time.minute
-                earl_day = 0
-                return earl_hour, earl_minute, earl_day
-
-
-        # If not * as minute nor as hour
-        else:
-            if cr_time.minute < cur_time.minute:
-                # Case G1
-                # cr_time.hour == cur_time.hour
-                # E.g. cur_time; 23:11
-                #       cr_time; 22:11
-                # =>             22:11, tomorrow
-                #
-                # Case G2
-                # cr_time.hour < cur_time.hour
-                # E.g. cur_time; 23:11
-                #       cr_time; 22:10
-                # =>             22:10, tomorrow
-                #
-                if cr_time.hour <= cur_time.hour:
-                    earl_hour = cr_time.hour
-                    earl_minute = cr_time.minute
-                    earl_day = 1
-                    return earl_hour, earl_minute, earl_day
-
-                # Case H
-                # E.g. cur_time; 22:11
-                #       cr_time; 23:10
-                # =>             23:10, today
-                else:
-                    earl_hour = cr_time.hour
-                    earl_minute = cr_time.minute
-                    earl_day = 0
-                    return earl_hour, earl_minute, earl_day
-
-            else:
-                # Case I
-                # E.g. cur_time; 23:11
-                #       cr_time; 22:12
-                # =>             22:12, tomorrow
-                if cr_time.hour < cur_time.hour:
-                    earl_hour = cr_time.hour
-                    earl_minute = cr_time.minute
-                    earl_day = 1
-                    return earl_hour, earl_minute, earl_day
-
-                # Case J
-                # E.g. cur_time; 22:11
-                #       cr_time; 23:12
-                # =>             23:12, today
-                else:
-                    earl_hour = cr_time.hour
-                    earl_minute = cr_time.minute
-                    earl_day = 0
-                    return earl_hour, earl_minute, earl_day
+        # In case we'd run this application from another program and we'd need the 
+        # exception to be caught, we can then use a custom exception here.
+        raise ValueError("Unhandled case")
 
 
 def get_earliest_run_time_prettified(cr_time, cur_time):
